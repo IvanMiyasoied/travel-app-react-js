@@ -1,7 +1,7 @@
 
 import './ErrorPopup.css';
 
-function ErrorPopup({text, isOpen}) {
+function ErrorPopup({text, }) {
 
   // if (!text) return null;
   

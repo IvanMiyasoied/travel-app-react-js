@@ -1,23 +1,33 @@
-import { getCountries, searchGeo } from "./api";
+import { getCountries, getSearchPrices, searchGeo, startSearchPrices } from "./api";
 
 const responseError = { ok: false, text: "Text Error", status: 404 };
 const responseGood = { ok: true, data: [], status: 200 };
 
-
-function debounce(func, delay) {
+//  асинхронный debounce
+function debounceAsync(func, delay) {
   let timeoutId;
   return function(...args) {
-    const context = this; 
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func.apply(context, args);
-    }, delay);
+    const context = this;
+    return new Promise((resolve, reject) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        try {
+          const result = await func.apply(context, args);
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      }, delay);
+    });
   };
 }
 
 
-const waitPromise = async () =>
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+const waitPromise = async (time = 1000) =>
+  await new Promise((resolve) => setTimeout(resolve, time));
+
+
 
 const getPromises = (promise) => async (data) => {
   const response1 = await promise(data);
@@ -50,8 +60,64 @@ const getSearchGeo = async (text) => {
 };
 
 
+const getStartSearchPrices = async (countryID) => {
+  try {
+    const response = await startSearchPrices(countryID)
+    const data = await response.json();
+    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
+    return {ok : true, data, status : response.status}
+  } catch (e) {
+    return { ok: false, status: e.code, text: e.message };
+  }
+}
+
+const getSearchPricesApi = async (token) => {
+  try {
+    const response = await getSearchPrices(token)
+    const data = await response.json();
+    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
+    return {ok : true, data, status : response.status}
+  } catch (e) {
+    return { ok: false, status: e.code, text: e.message };
+  }
+}
+
+
+
+export const getSearchPricesApiTwice = getPromises(getSearchPricesApi);
+export const getStartSearchPricesTwice = getPromises(getStartSearchPrices);
 export const getCountryForCountriesTwice = getPromises(getCountryForCountries);
 export const getSearchGeoTwice = getPromises(getSearchGeo)//, 500)
+// export const getSearchGeoTwice = debounce(getPromises(getSearchGeo), 500)
+
+
+export const getSearchCountry = async (countryID) => {
+  try {
+    const response = await getStartSearchPricesTwice(countryID)
+    if(response.ok) return { ok: false, status: response.status, text: data.message };
+
+    const time = new Date(response.data.waitUntil)
+    const now = Date.now();
+
+    const timeWeit = time - now;
+    console.log(timeWeit)
+    // const time = 
+
+    const data = await response.json();
+    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
+    return {ok : true, data, status : response.status}
+  } catch (e) {
+    return { ok: false, status: e.code, text: e.message };
+  }
+}
+
+
+// {
+//   "token": "3d0b65a0-5951-4364-b084-1e938064905a",
+//   "waitUntil": "2025-11-01T11:02:40.002Z"
+// }
+
+
 
 
 

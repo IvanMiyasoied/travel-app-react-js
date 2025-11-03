@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getCountries } from "../../api/api";
 import { useApiRequestContext } from "../../store/useApiRequest";
-import { getSearchGeoTwice } from "../../api/my-api";
+import { getSearchCountry, getSearchGeoTwice, getStartSearchPricesTwice } from "../../api/my-api";
 import './style.css'
 
 const types = ["hotel", "city", "country"]
@@ -44,13 +44,25 @@ function Form() {
   }
 
 
+  const onGetCountryResult = async (data) => {
+    const r = await getSearchCountry(data.id)
+
+    console.log(r, data)
+  }
+
+
   const onFocusHandler = () => {
     if(text.trim() === '') setDatas(store.countryData);
     setIsOpen(true)
   }
   const onSelected = (data) => {
-
     setIsOpen(false)
+
+    switch(data.type){
+      case 'country' : return onGetCountryResult(data)
+      // create 2 function  hotel city
+    }
+
   }
 
 
@@ -64,8 +76,8 @@ function Form() {
   return (
     <form className="main-form">
       <div className="main-form-content">
-
-      <input onFocus={onFocusHandler} onBlur={() => setIsOpen(false)} type="text" onChange={onHandlerSearch} value={text} className="main-input" />
+      {/* onBlur={() => setIsOpen(false)} */}
+      <input onFocus={onFocusHandler}  type="text" onChange={onHandlerSearch} value={text} className="main-input" />
       {isOpen && <div className="main-lists">
         {datas.map((elem) => <OneSearchResult elem={elem}  key={elem.id} onSelected={onSelected}/> )}
         </div>}
