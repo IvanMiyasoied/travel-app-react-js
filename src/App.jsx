@@ -12,7 +12,7 @@ function App() {
       <Form />
       <Hotels/>
       {store.isLoading && <Loading/>}
-      <ErrorPopup text={store.error?.text} isOpen={!!store.error}/>
+      <ErrorPopup text={store.error?.text} isOpen={store.error.isOpen}/>
     </ApiRequestContext.Provider>
   );
 }

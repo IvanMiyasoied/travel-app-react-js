@@ -108,6 +108,7 @@ export const getHotelsApiTwice = getPromises(getHotelsApi);
 export const getSearchPricesApiTwice = getPromises(getSearchPricesApi);
 export const getStartSearchPricesTwice = getPromises(getStartSearchPrices);
 export const getCountryForCountriesTwice = getPromises(getCountryForCountries);
+export const getHotelApiTwice = getPromises(getHotelApi);
 export const getSearchGeoTwice = getPromises(getSearchGeo)//, 500)
 // export const getSearchGeoTwice = debounce(getPromises(getSearchGeo), 500)
 
@@ -115,7 +116,7 @@ export const getSearchGeoTwice = getPromises(getSearchGeo)//, 500)
 export const getSearchCountry = async (countryID) => {
   try {
     const response = await getStartSearchPricesTwice(countryID)
-    if(!response.ok) return { ok: false, status: response.status, text: data.message };
+    if(!response.ok) return { ok: false, status: response.status, text: response.text };
     const token = response.data.token;
 
     const time = new Date(response.data.waitUntil)

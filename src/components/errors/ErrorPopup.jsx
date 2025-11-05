@@ -1,20 +1,20 @@
 
 import './ErrorPopup.css';
 
-function ErrorPopup({text, }) {
+function ErrorPopup({text, isOpen}) {
 
   // if (!text) return null;
   
   return (
     <>
-     <div className='fade-out'>
-          <div className='error-popup'>
+     {/* <div className={isOpen ? '' :  'fade-out'}> */}
+     {/* <div className={isOpen ? 'fade-in' : 'fade-out'}> */}
+          <div className={'error-popup ' + (isOpen ? '' :  'fade-out')}>
             <p className='error-content'>
-              {/* {text} */}
-              Error
+              {text}
             </p>
           </div>
-     </div>
+     {/* </div> */}
     </>
   )
 }

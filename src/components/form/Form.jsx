@@ -71,6 +71,8 @@ function Form() {
     switch (data.type) {
       case "country":
         return store.onSearchCountryHotels(data.id);
+      case "city" : return store.onSearchCityHotels(data.countryId, data.id);
+      case "hotel" : return store.onSearchOneHotel(data.countryId, data.cityId, data.id);
       //  onGetCountryResult(data);
       // create 2 function  hotel city
     }
