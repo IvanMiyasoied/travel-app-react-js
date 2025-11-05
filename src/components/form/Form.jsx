@@ -11,8 +11,8 @@ const OneSearchResult = ({elem, onSelected}) => {
 
   const img = useMemo(() => {
     if(elem.type === 'country') return elem.flag;
-    if(elem.type === 'city') return '' /// add icon 
-    if(elem.type === 'hotel') return // add icon
+    if(elem.type === 'city') return 'public/location.png' /// add icon 
+    if(elem.type === 'hotel') return 'public/office.png'// add icon
   }, [elem])
 
   return <div onClick={() => onSelected(elem)}>  

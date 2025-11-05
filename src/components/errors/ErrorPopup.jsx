@@ -7,9 +7,9 @@ function ErrorPopup({text, }) {
   
   return (
     <>
-     <div className='error-popup'>
-          <div>
-            <p>
+     <div className='fade-out'>
+          <div className='error-popup'>
+            <p className='error-content'>
               {/* {text} */}
               Error
             </p>
