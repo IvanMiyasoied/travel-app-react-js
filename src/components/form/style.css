@@ -14,12 +14,48 @@
     border : 2px solid black;
     margin: 0 auto;
     height : 36px;
+    width: 320px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background-color: white;
 }
+.main-form-close {
+    position: absolute;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+
+
+
+
 .main-lists {
     position : absolute;
-    top : 36px;
-    width : 100%;
-
+    top : 44px;
+    width : calc(100% - 20px);
+    box-shadow: 0px 0px 5px black;
+    background-color: white;
+    padding: 10px;
+    gap: 15px;
+    border-radius: 10px;
     
+    display: flex;
+    flex-direction: column;
+}
+.saerch-c {
+    display: flex;
+    gap: 15px;
+    cursor: pointer;
+    align-items: center;
+    /* padding: 10px 0; */
+}
 
+.saerch-c-icon {
+    width: 40px;
+}
+.saerch-icon {
+    /* width: 24px; */
+    height: 24px;
 }

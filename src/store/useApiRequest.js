@@ -6,7 +6,7 @@ import {
   useContext,
   useMemo,
 } from "react";
-import { getCountryForCountriesTwice } from "../api/my-api";
+import { getCountryForCountriesTwice, getHotelsApiTwice, getSearchCountry } from "../api/my-api";
 
 export const ApiRequestContext = createContext();
 
@@ -18,11 +18,42 @@ const getCeshDataFromLS = (key) => {
 };
 
 export const useApiRequest = () => {
-  const [isLoading, seyIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [countryData, setCountryData] = useState(
     getCeshDataFromLS("countryData")
   );
+
+
+  const [countriesDataHotel, setCountriesDataHotel] = useState({});
+  const [searchPrices, getSearchPrices] = useState({});
+
+  const [searchResults, setSearchResults] = useState([]);
+
+  const onGetCountryResultHotels = async (countryID) => {
+    // if (countriesDataHotel[countryID]) return;
+
+    const response = await getHotelsApiTwice(countryID);
+    if (!response.ok) createError(response);
+    else {
+      const data = Object.values(response.data)
+      setCountriesDataHotel((prev) => ({
+        ...prev,
+        [countryID]: data
+      }));
+      setSearchResults(data)
+      // onGetSearchPrices(countryID);
+    }
+
+  };
+
+  const onSearchCountryHotels = async (countryID) => {
+    setIsLoading(true);
+    if (!countriesDataHotel[countryID]) await onGetCountryResultHotels(countryID);
+    if (!searchPrices[countryID]) await onGetSearchPrices(countryID);
+    setIsLoading(false);
+  }
+
 
   const getCountryData = useCallback(async () => {
     const response = await getCountryForCountriesTwice();
@@ -38,12 +69,11 @@ export const useApiRequest = () => {
   const fetchAllDatas = useCallback(async () => {
     const now = Date.now();
     const isGetCountry = now > countryData.timestamp;
-
-    seyIsLoading(true);
+    setIsLoading(true);
     if (isGetCountry) await getCountryData();
     // if(isGetCountry) await getCountryData();
     // if(isGetCountry) await getCountryData();
-    seyIsLoading(false);
+    setIsLoading(false);
   }, [countryData]);
 
   useEffect(() => {
@@ -58,15 +88,37 @@ export const useApiRequest = () => {
     }, 5000);
   }, []);
 
-  
 
-  const countryDataMemo = useMemo(() => Object.values(countryData.data).map(el => ({...el, type : 'country'})), [countryData])
+  const onGetSearchPrices = async (countryID) => {
+    // if(searchPrices[countryID]) return;
+    const response = await getSearchCountry(countryID);
+    if (!response.ok) createError(response);
+    else {
+      getSearchPrices((prev) => ({
+        ...prev,
+        [countryID]: Object
+          .values(response.data.prices)
+          .reduce((acc, item) => {
+            acc[item.hotelID] = item;
+            return acc;
+        }, {})
+      }));
+    }
+  };
+
+
+
+  const countryDataMemo = useMemo(() => Object.values(countryData.data).map(el => ({ ...el, type: 'country' })), [countryData])
 
   return {
     createError,
     isLoading,
     error,
     countryData: countryDataMemo,
+    setIsLoading,
+    onSearchCountryHotels,
+    searchResults,
+    searchPrices
   };
 };
 

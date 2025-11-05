@@ -1,4 +1,4 @@
-import { getCountries, getSearchPrices, searchGeo, startSearchPrices } from "./api";
+import { getCountries, getHotel, getHotels, getSearchPrices, searchGeo, startSearchPrices } from "./api";
 
 const responseError = { ok: false, text: "Text Error", status: 404 };
 const responseGood = { ok: true, data: [], status: 200 };
@@ -81,9 +81,30 @@ const getSearchPricesApi = async (token) => {
     return { ok: false, status: e.code, text: e.message };
   }
 }
+const getHotelApi = async (hotelID) => {
+  try {
+    const response = await getHotel(hotelID)
+    const data = await response.json();
+    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
+    return {ok : true, data, status : response.status}
+  } catch (e) {
+    return { ok: false, status: e.code, text: e.message };
+  }
+}
+const getHotelsApi = async (countryID) => {
+  try {
+    const response = await getHotels(countryID)
+    const data = await response.json();
+    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
+    return {ok : true, data, status : response.status}
+  } catch (e) {
+    return { ok: false, status: e.code, text: e.message };
+  }
+}
 
 
 
+export const getHotelsApiTwice = getPromises(getHotelsApi);
 export const getSearchPricesApiTwice = getPromises(getSearchPricesApi);
 export const getStartSearchPricesTwice = getPromises(getStartSearchPrices);
 export const getCountryForCountriesTwice = getPromises(getCountryForCountries);
@@ -94,18 +115,17 @@ export const getSearchGeoTwice = getPromises(getSearchGeo)//, 500)
 export const getSearchCountry = async (countryID) => {
   try {
     const response = await getStartSearchPricesTwice(countryID)
-    if(response.ok) return { ok: false, status: response.status, text: data.message };
+    if(!response.ok) return { ok: false, status: response.status, text: data.message };
+    const token = response.data.token;
 
     const time = new Date(response.data.waitUntil)
     const now = Date.now();
-
     const timeWeit = time - now;
-    console.log(timeWeit)
-    // const time = 
-
-    const data = await response.json();
-    if (response.ok == false) return { ok: false, status: response.status, text: data.message };
-    return {ok : true, data, status : response.status}
+    await waitPromise(timeWeit);
+    const responseData = await getSearchPricesApiTwice(token)
+    const keys = Object.keys(responseData.data.prices);
+    if(keys.length === 0) return { ok: false, status: 404, text: 'За вашим запитом турів не знайдено'};
+    return responseData;
   } catch (e) {
     return { ok: false, status: e.code, text: e.message };
   }

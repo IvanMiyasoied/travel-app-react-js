@@ -8,6 +8,7 @@
 }
 body {
   height: 100vh;
+  background: rgb(228, 227, 227);
 }
 #root {
   width: 100%;
