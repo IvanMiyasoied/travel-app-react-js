@@ -13,7 +13,7 @@ export const Hotel = ({ elem, searchPrices }) => {
       <img className="hotel-img" src={elem.img} alt="" />
       <h2 className="hotel-name">{elem.name}</h2>
       <div className="hotel-country-city">
-        <img className="hotel-flag" src="" alt="" />
+        <img className="hotel-flag" src={elem.flag} alt="pic" />
         <p className="hotel-country">{elem.countryName}</p>
         <p className="hotel-city">{elem.cityName}</p>
       </div>

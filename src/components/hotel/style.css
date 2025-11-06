@@ -20,6 +20,15 @@
     object-fit: cover;
     border-radius: 8px;
   }
+  .hotel-error-content {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    
+  }
   
   /* <div className="hotel-content">
       <img className="hotel-img" src={elem.img} alt="" />
