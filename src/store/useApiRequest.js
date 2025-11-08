@@ -6,7 +6,7 @@ import {
   useContext,
   useMemo,
 } from "react";
-import { getCountryForCountriesTwice, getHotelApiTwice, getHotelsApiTwice, getSearchCountry } from "../api/my-api";
+import { getCountryForCountriesTwice, getHotelApiTwice, getHotelsApiTwice, getSearchCountry, onBlockSearchPrices, stopSearchPricesApi } from "../api/my-api";
 
 export const ApiRequestContext = createContext();
 
@@ -23,7 +23,10 @@ export const useApiRequest = () => {
   const [countryData, setCountryData] = useState(
     getCeshDataFromLS("countryData")
   );
-
+  // was there a request
+  
+  const [isWasRequest, setIsWasRequest] = useState(false);
+  const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [cityID, setCityID] = useState(null)
   const [countryID, setCountryID] = useState(null)
   const [hotelID, setHotelID] = useState(null)
@@ -43,28 +46,9 @@ export const useApiRequest = () => {
       }));
     }
   };
-
-
-  const r = {
-    "id": 7898,
-    "name": "Saphir Hotel & Villas",
-    "img": "https://newimg.otpusk.com/2/400x300/00/04/37/33/4373386.webp",
-    "cityId": 953,
-    "cityName": "Аланія",
-    "countryId": "115",
-    "countryName": "Туреччина",
-    "description": "Готель розташований на березі моря. Готель заснований у 1990 році, остання реновація проведена у 2016 році. Затишна зелена територія, комфортабельні номери. Поруч із готелем знаходиться гарна дискотека. Підійде для молоді та сімей з дітьми.",
-    "services": {
-        "wifi": "yes",
-        "aquapark": "none",
-        "tennis_court": "yes",
-        "laundry": "yes",
-        "parking": "yes"
-    }
-}
+ 
 
   const onGetHotelApiTwice = async (countryID, hotelID) => {
-    // cesh
     const hotelCountry = countriesDataHotel[countryID];
     if(hotelCountry) {
       const isExist = hotelCountry.some(el => el.id == hotelID);
@@ -75,6 +59,7 @@ export const useApiRequest = () => {
     if (!response.ok) createError(response);
     else {
       const data = response.data;
+
       setCountriesDataHotel((prev) => {
         const hotels = prev[countryID] || [];
         const existIndex = hotels.findIndex(el => hotelID === el.id);
@@ -86,21 +71,12 @@ export const useApiRequest = () => {
         }
       });
     }
-    // if (!response.ok) createError(response);
-    // else {
-    //   const data = Object.values(response.data)
-    //   setCountriesDataHotel((prev) => ({
-    //     ...prev,
-    //     [countryID]: data
-    //   }));
-    // }
   };
 
  const searchResults = useMemo(() => {
    if(Object.keys(countriesDataHotel).length === 0) return [];
    const hotels = countriesDataHotel[countryID];
-   console.log(countriesDataHotel)
-   console.log(countryID, cityID, hotelID)
+
    if(!hotels) return [];
    if(cityID) return hotels.filter((el => cityID === el.cityId))
    return hotels
@@ -108,17 +84,19 @@ export const useApiRequest = () => {
 
 
 
-  const onSearchCountryHotels = async (countryID) => {
+  const onSearchCountryHotels = async (countryID, cityID) => {
     setIsLoading(true);
     setCityID(null)
     setCountryID(countryID)
+    // setIsWasRequest(false)
+    setIsWasRequest(true)
     await onGetCountryResultHotels(countryID);
-    await onGetSearchPrices(countryID);
+    await onGetSearchPrices(countryID, cityID);
     setIsLoading(false);
 
   }
   const onSearchCityHotels = async (countryID, cityID) => {
-    onSearchCountryHotels(countryID)
+    onSearchCountryHotels(countryID, cityID)
     setCityID(cityID)
   }
   const onSearchOneHotel = async (countryID, cityID, hotelID) => {
@@ -126,8 +104,9 @@ export const useApiRequest = () => {
     setCountryID(countryID)
     setHotelID(hotelID)
     setCityID(cityID)
+    setIsWasRequest(true)
     await onGetHotelApiTwice(countryID, hotelID)
-    await onGetSearchPrices(countryID);
+    await onGetSearchPrices(countryID, cityID, hotelID);
     setIsLoading(false);
   }
 
@@ -150,13 +129,10 @@ export const useApiRequest = () => {
     const isGetCountry = now > countryData.timestamp;
     setIsLoading(true);
     if (isGetCountry) await getCountryData();
-    // if(isGetCountry) await getCountryData();
-    // if(isGetCountry) await getCountryData();
     setIsLoading(false);
   }, [countryData]);
 
   useEffect(() => {
-    // get country data from api
     fetchAllDatas();
   }, []);
 
@@ -164,22 +140,15 @@ export const useApiRequest = () => {
     setError({ text, status, isOpen : true });
     setTimeout(() => {
       setError(error => ({...error, isOpen : false}));
-      setTimeout(() => {
-        setError(error => ({...error, text : ''}));
-      }, 1700);
     }, 5000);
   }, []);
 
-
-  const onGetSearchPrices = async (countryID) => {
+  const onGetSearchPrices = async (countryID, cityID, hotelID) => {
     const hotelCountry = searchPrices[countryID];
-    if(hotelCountry) {
-      if(!hotelID) return;
-      const isExist = hotelCountry.some(el => el.id == hotelID);
-      if(isExist) return;
-    }
-
+    if(hotelCountry) return
+    setIsLoadingPrice(true)
     const response = await getSearchCountry(countryID);
+    if(response.ok == false && response.status === 408) return;
     if (!response.ok) createError(response);
     else {
       getSearchPrices((prev) => ({
@@ -192,12 +161,20 @@ export const useApiRequest = () => {
         }, {})
       }));
     }
+    setIsLoadingPrice(false)
   };
-
-
-
   const countryDataMemo = useMemo(() => Object.values(countryData.data).map(el => ({ ...el, type: 'country' })), [countryData])
 
+  const clearCurrentSearch = () => {
+    stopSearchPricesApi()
+    onBlockSearchPrices()
+    setCityID(null)
+    setCountryID(null)
+    setHotelID(null)
+    setIsWasRequest(false)
+    setIsLoadingPrice(false)
+    setIsLoading(false)
+  }
   return {
     createError,
     isLoading,
@@ -207,8 +184,12 @@ export const useApiRequest = () => {
     onSearchCountryHotels,
     onSearchCityHotels,
     onSearchOneHotel,
+    clearCurrentSearch,
     searchResults,
-    searchPrices
+    searchPrices,
+    isWasRequest,
+    isLoadingPrice,
+    countriesDataHotel
   };
 };
 

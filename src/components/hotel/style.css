@@ -5,7 +5,7 @@
     justify-content: center;
     margin: auto;
     padding: 25px;
-    /* padding: 50px 0; */
+    max-width: 700px;
  }
   .hotel-content {
     flex: 0 250px;
@@ -29,18 +29,25 @@
     transform: translate(-50%, -50%);
     
   }
-  
-  /* <div className="hotel-content">
-      <img className="hotel-img" src={elem.img} alt="" />
-      <h2 className="hotel-name">{elem.name}</h2>
-      <div className="hotel-country-city">
-        <img className="hotel-flag" src="" alt="" />
-        <p className="hotel-country">{elem.countryName}</p>
-        <p className="hotel-city">{elem.cityName}</p>
-      </div>
-      <p className="hotel-start-tur">старт тура</p>
-      <p className="hotel-date">{priceInfo.startDate}</p>
-      <p className="hotel-price">{priceInfo.amount} {priceInfo.currency}</p>
-      <a className="hotel-open-price">Відкрити ціну</a>
-    </div>
-  ); */
+  .hotel-country-city {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 5px 0;
+  }
+  .hotel-flag {
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+  .hotel-price {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 5px 0;
+  }
+  .hotel-open-price {
+    display: inline-block;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+  }

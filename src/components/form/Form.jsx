@@ -27,7 +27,8 @@ const OneSearchResult = ({ elem, onSelected }) => {
 };
 
 function Form() {
-  const store = useApiRequestContext();
+  // const store = useApiRequestContext();
+  const {countryData, createError, onSearchCountryHotels, onSearchCityHotels, onSearchOneHotel, clearCurrentSearch, isLoadingPrice} = useApiRequestContext();
   const [datas, setDatas] = useState([]);
   const [text, setText] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -35,46 +36,27 @@ function Form() {
   const onHandlerSearch = async (e) => {
     const v = e.target.value;
     setText(v);
-    if (v.trim()) {
-      const response = await getSearchGeoTwice();
-      if (!response.ok) return store.createError(response);
-      setDatas(Object.values(response.data));
+    if (v.trim() === "") {
+      setDatas(countryData);
     }
   };
 
-  // const onGetCountryResult = async (data) => {
-  //   // store.setIsLoading(true);
-  //   const response = await getSearchCountry(data.id);
-  //   if (!response.ok) store.createError(response);
-  //   else {
-  //   }
-  //   console.log(response);
-  //   // store.setIsLoading(false);
-  // };
-  // const onGetCountryResultHotels = async (data) => {
-  //   store.setIsLoading(true);
-  //   const response = await getHotelsApiTwice(data.id);
-  //   if (!response.ok) store.createError(response);
-  //   else {
-  //   }
-  //   console.log(response);
-  //   store.setIsLoading(false);
-  // };
+  const onSearch = async () => {
+      const response = await getSearchGeoTwice();
+      if (!response.ok) return createError(response);
+      setDatas(Object.values(response.data));
+  }
 
   const onFocusHandler = () => {
-    if (text.trim() === "") setDatas(store.countryData);
+    if (text.trim() === "") setDatas(countryData);
     setIsOpen(true);
   };
   const onSelected = (data) => {
     setIsOpen(false);
-
     switch (data.type) {
-      case "country":
-        return store.onSearchCountryHotels(data.id);
-      case "city" : return store.onSearchCityHotels(data.countryId, data.id);
-      case "hotel" : return store.onSearchOneHotel(data.countryId, data.cityId, data.id);
-      //  onGetCountryResult(data);
-      // create 2 function  hotel city
+      case "country": return onSearchCountryHotels(data.id);
+      case "city" : return onSearchCityHotels(data.countryId, data.id);
+      case "hotel" : return onSearchOneHotel(data.countryId, data.cityId, data.id);
     }
   };
 
@@ -83,26 +65,37 @@ function Form() {
     setDatas([]);
     setIsOpen(false);
   };
+  const isExisttext = text.trim() !== "";
+  const onHiddenList = () => {
+    if(isExisttext) return
+    setTimeout(() => {
+      setIsOpen(false);
+    }, 200);
+  }
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+     onSearch()
+    }
+  };
+  const onBreakSearch = () => {
+    clearCurrentSearch()
+  }
 
-  // console.log(store.countryData);
-
-  // const onHandlerSearch = async () => {
-  //   const res = await getSearchGeoTwice();
-  //   console.log(res);
-  // };
 
   return (
-    <form className="main-form">
+    <div className="main-form">
       <div className="main-form-content">
-        {/* onBlur={() => setIsOpen(false)} */}
-        {text.trim() !== "" && (
+        {isExisttext && (
           <div className="main-form-close" onClick={clearSearch}>
             x
           </div>
         )}
         <input
+          onBlur={onHiddenList}
           onFocus={onFocusHandler}
           type="text"
+          onKeyDown={handleKeyDown}
           onChange={onHandlerSearch}
           value={text}
           className="main-input"
@@ -119,7 +112,13 @@ function Form() {
           </div>
         )}
       </div>
-    </form>
+      {isLoadingPrice ? <button onClick={onBreakSearch} className="main-button main-button-break">
+        Зупинити пошук
+      </button>
+     : <button disabled={!isExisttext} onClick={onSearch} className="main-button">
+        Знайти
+      </button>}
+    </div>
   );
 }
 
